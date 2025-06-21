@@ -18,10 +18,10 @@ inputs:
   container-app-name:
     description: "Specifies the name of the container app to wait for. If empty will wait for all container apps in the resource group."
     required: false
-  wait-for-state:
-    description: "Specifies the state to wait for. Defaults to 'Running'."
+  check-interval:
+    description: "Specifies the interval in seconds to check the container app status."
     required: false
-    default: 'Running'
+    default: '2'
 
 # Define your outputs here.
 outputs:

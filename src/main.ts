@@ -12,10 +12,6 @@ function createContainerAppsClient(config: ActionConfig): ContainerAppsAPIClient
     userAgentOptions: {
       userAgentPrefix: userAgentPrefix,
     },
-    // additionalPolicies: [debugLoggingPolicy],
-    // Use a recent API version to take advantage of error improvements
-    // apiVersion: "2024-03-01",
-    // endpoint: endpoints[config.environment],
   });
 }
 
@@ -40,7 +36,7 @@ async function revisionsToWaitFor(config: ActionConfig, apps: string[], client: 
   for (const app of apps) {
     const revisions = client.containerAppsRevisions.listRevisions(config.resourceGroupName, app);
     for await (const revision of revisions) {
-      if (revision.runningState === 'Stopped' || revision.runningState === 'Running') {
+      if (revision.runningState !== 'Activating') {
         continue;
       }
 
@@ -64,28 +60,33 @@ async function revisionsToWaitFor(config: ActionConfig, apps: string[], client: 
 export async function run(): Promise<void> {
   try {
     const config = parseConfig();
-    // Debug logs are only output if the `ACTIONS_STEP_DEBUG` secret is true
-    core.debug(`Condition for container app ${config.containerAppName} in resource group ${config.resourceGroupName}`);
-
     const client = createContainerAppsClient(config);
     const apps = await containerAppsToWaitFor(config, client);
-
     const appRevisions = await revisionsToWaitFor(config, apps, client);
 
-    while (!!appRevisions) {
+    // Iterate through the revisions and wait for them to finish activating
+    // If a revision is still activating, log the time it has been activating
+    // If a revision is not activating, remove it from the list
+    while (Object.keys(appRevisions).length > 0) {
       for (const [appName, revisions] of Object.entries(appRevisions)) {
         for (const revision of revisions) {
           const rev = await client.containerAppsRevisions.getRevision(config.resourceGroupName, appName, revision);
           if (rev.runningState === 'Activating') {
-            const now = new Date();
-            core.info(`Revision ${revision} of container app ${appName} in resource group ${config.resourceGroupName} still activating after ${now.getTime() - rev.createdTime!.getTime()} seconds`);
+            const activatingForDuration = Math.floor((new Date().getTime() - rev.createdTime!.getTime()) / 1000);
+            core.info(`Revision ${revision} of container app ${appName} in resource group ${config.resourceGroupName} still activating for ${activatingForDuration} seconds`);
           } else {
             core.info(`Revision ${revision} of container app ${appName} in resource group ${config.resourceGroupName} is in state ${rev.runningState}`);
             delete appRevisions[appName]; // Remove from the list if it's not activating
           }
         }
       }
+
+      if (Object.keys(appRevisions).length > 0) {
+        await new Promise(resolve => setTimeout(resolve, 1000 * config.checkInterval)); // Wait before checking again
+      }
     }
+
+    core.debug(`All container apps in resource group ${config.resourceGroupName} are no longer activating`);
 
     // Set outputs for other workflow steps to use
     core.setOutput('time', new Date().toTimeString())

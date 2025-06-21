@@ -4,7 +4,7 @@ export type ActionConfig = {
   subscriptionId: string;
   resourceGroupName: string;
   containerAppName: string | undefined;
-  waitForState: string;
+  checkInterval: number;
 };
 
 function getInput(
@@ -34,13 +34,13 @@ function getInput(
 export function parseConfig(): ActionConfig {
   const subscriptionId = getInput("subscription-id") as string;
   const resourceGroupName = getInput("resource-group-name") as string;
-  const containerAppName = getInput("container-app-name", [], false);
-  const waitForState = getInput("wait-for-state") as string;
+  const containerAppName = getInput("container-app-name", undefined, false);
+  const checkInterval = parseInt(getInput("check-interval", undefined, false) as string);
 
   return {
     subscriptionId,
     resourceGroupName,
     containerAppName,
-    waitForState,
+    checkInterval,
   };
 }
