@@ -9,7 +9,7 @@ branding:
 
 # Define your inputs here.
 inputs:
-  subscrtion-id:
+  subscription-id:
     description: 'Specifies the Azure subscription ID to use.'
     required: true
   resource-group-name:

@@ -57,7 +57,10 @@ jobs:
         id: test-action
         uses: ./
         with:
-          milliseconds: 2000
+          subscription-id: '00000000-0000-0000-0000-000000000000'
+          resource-group-name: 'test-resource-group'
+          container-app-name: 'test-container-app'
+          check-interval: '2'
 
       - name: Print Output
         id: output

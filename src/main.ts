@@ -21,14 +21,14 @@ async function containerAppsToWaitFor(
   config: ActionConfig,
   client: ContainerAppsAPIClient
 ): Promise<string[]> {
-  if (!!config.containerAppName) {
+  if (config.containerAppName) {
     core.debug(
       `Waiting for container app ${config.containerAppName} in resource group ${config.resourceGroupName}`
     )
     return [config.containerAppName]
   }
 
-  const resArray = new Array()
+  const resArray = [];
   const apps = client.containerApps.listByResourceGroup(
     config.resourceGroupName
   )
