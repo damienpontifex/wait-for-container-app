@@ -10,16 +10,20 @@ branding:
 # Define your inputs here.
 inputs:
   subscrtion-id:
-    description: "Specifies the Azure subscription ID to use."
+    description: 'Specifies the Azure subscription ID to use.'
     required: true
   resource-group-name:
-    description: "Specifies the resource group name that the container app is in."
+    description:
+      'Specifies the resource group name that the container app is in.'
     required: true
   container-app-name:
-    description: "Specifies the name of the container app to wait for. If empty will wait for all container apps in the resource group."
+    description:
+      'Specifies the name of the container app to wait for. If empty will wait
+      for all container apps in the resource group.'
     required: false
   check-interval:
-    description: "Specifies the interval in seconds to check the container app status."
+    description:
+      'Specifies the interval in seconds to check the container app status.'
     required: false
     default: '2'
 
